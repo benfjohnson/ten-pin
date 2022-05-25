@@ -11,6 +11,7 @@ export interface State {
   rollInput: string;
   currentTurn: Index;
   winner: Index | null;
+  validationMsg: string;
 }
 
 export type Roll =

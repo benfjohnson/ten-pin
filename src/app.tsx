@@ -3,20 +3,42 @@ import { createRoot } from "react-dom/client";
 import { submitRoll, advanceTurn, advanceFrame } from "./lib";
 import type * as TenPin from "./types";
 
+// is the input a valid roll string?
 const isRoll = (str: string): str is TenPin.Roll => {
-  return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "/"].includes(
-    str
-  );
+  return /^[x\/\d]$/i.test(str);
+};
+
+// does the roll make sense given current roll in the frame?
+const isRollValid = (roll: TenPin.Roll, currentRoll: TenPin.Index): boolean => {
+  if (
+    (roll === "/" && currentRoll === 0) ||
+    (/^x$/i.test(roll) && currentRoll === 1)
+  )
+    return false;
+  return true;
 };
 
 const reducer = (state: TenPin.State, action: TenPin.Action): TenPin.State => {
   switch (action.type) {
     case "INPUT_ROLL":
-      return { ...state, rollInput: action.payload };
+      if (!isRoll(action.payload))
+        return {
+          ...state,
+          rollInput: action.payload,
+          validationMsg: "Pleae input a valid bowling roll",
+        };
+      if (!isRollValid(action.payload, state.currentRoll))
+        return {
+          ...state,
+          rollInput: action.payload,
+          validationMsg: "Invalid spare or strike specified",
+        };
+
+      return { ...state, rollInput: action.payload, validationMsg: "" };
 
     case "SUBMIT_ROLL": {
       const { rollInput } = state;
-      if (!isRoll(rollInput)) return { ...state }; // TODO: isValidRoll (further validation that roll makes sense given turn)
+      if (!isRoll(rollInput)) return { ...state };
 
       const newPlayers = submitRoll(state, rollInput);
 
@@ -59,6 +81,7 @@ const initialState: TenPin.State = {
   currentTurn: 0,
   winner: null,
   rollInput: "",
+  validationMsg: "Please input a valid bowling roll",
 };
 
 const Frame = ({
@@ -123,7 +146,13 @@ const App = () => {
           })
         }
       />
-      <button onClick={() => dispatch({ type: "SUBMIT_ROLL" })}>Submit</button>
+      <button
+        disabled={state.validationMsg !== ""}
+        onClick={() => dispatch({ type: "SUBMIT_ROLL" })}
+      >
+        Submit
+      </button>
+      <p className="validation-msg">{state.validationMsg}</p>
     </div>
   );
 };

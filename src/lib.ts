@@ -6,6 +6,12 @@ const NUM_FRAMES = 10;
 const endOfFrame = (state: TenPin.State): boolean =>
   state.currentTurn === NUM_PLAYERS - 1 && state.currentRoll === 1;
 
+const rollToScoreAndBonus = (roll: TenPin.Roll): [number, number] => {
+  if (roll === "/") return [10, 1];
+  if (/^x$/i.test(roll)) return [10, 2];
+  return [parseInt(roll), 0];
+};
+
 // should handle end of frame, reaching final player
 export const advanceTurn = (state: TenPin.State): TenPin.Index => {
   if (endOfFrame(state)) return 0;
@@ -27,7 +33,7 @@ export const updateFrameScores = (
   // add the new roll value to each open frame score
   const frames = state.players[currentTurn]?.frames || [];
   for (let i = currentFrame; i < frames.length; i++) {
-    frames[i].score += parseInt(rollValue);
+    frames[i].score += rollToScoreAndBonus(rollValue)[0];
   }
 
   // retroactively update open frames with latest roll
