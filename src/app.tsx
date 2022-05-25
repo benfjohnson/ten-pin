@@ -1,9 +1,7 @@
 import React, { useReducer } from "react";
 import { createRoot } from "react-dom/client";
-import { submitRoll, advanceTurn, getTurn } from "./lib";
+import { submitRoll, advanceTurn, advanceFrame } from "./lib";
 import type * as TenPin from "./types";
-
-const NUM_PLAYERS = 5;
 
 const isRoll = (str: string): str is TenPin.Roll => {
   return ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "X", "/"].includes(
@@ -21,22 +19,16 @@ const reducer = (state: TenPin.State, action: TenPin.Action): TenPin.State => {
       if (!isRoll(rollInput)) return { ...state }; // TODO: isValidRoll (further validation that roll makes sense given turn)
 
       const newPlayers = submitRoll(state, rollInput);
-      const turn = getTurn(state);
-      // If we're at the last roll of the frame, move to the next frame and player
-      const endOfFrame = turn === NUM_PLAYERS - 1 && state.currentRoll === 1;
-      const newFrame = endOfFrame ? state.currentFrame + 1 : state.currentFrame;
-      const newPhase: TenPin.GamePhase = endOfFrame
-        ? { status: "ACTIVE", turn: 0 }
-        : state.currentRoll === 0
-        ? state.phase
-        : advanceTurn(state);
 
+      // If we're at the last roll of the frame, move to the next frame and player (if needed)
+      const newFrame = advanceFrame(state);
+      const newTurn = advanceTurn(state);
       const newRoll = state.currentRoll === 0 ? 1 : 0;
 
       return {
         ...state,
         players: newPlayers,
-        phase: newPhase,
+        currentTurn: newTurn,
         currentFrame: newFrame,
         currentRoll: newRoll,
       };
@@ -60,9 +52,11 @@ const initialState: TenPin.State = {
     frames: getFrames(),
     score: 0,
   })),
-  phase: { status: "ACTIVE", turn: 0 },
+  phase: "ACTIVE",
   currentFrame: 0,
   currentRoll: 0,
+  currentTurn: 0,
+  winner: null,
   rollInput: "",
 };
 
@@ -99,18 +93,14 @@ const App = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   console.log("state", state);
 
-  if (state.phase.status === "COMPLETE") return <div>IsOver!</div>;
+  if (state.phase === "COMPLETE") return <div>IsOver!</div>;
 
   return (
     <div className="app-container">
       {state.players.map((p, i) => (
         <div
           key={i}
-          className={`player${
-            state.phase.status === "ACTIVE" && i === state.phase.turn
-              ? " active"
-              : ""
-          }`}
+          className={`player${i === state.currentTurn ? " active" : ""}`}
         >
           <div className="player-frames">
             <h2>Player: {i + 1}</h2>

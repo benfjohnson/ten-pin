@@ -1,16 +1,16 @@
-// just a number, but semantics are helpful
-export type PlayerId = number;
+// helpful semantic reminder
+export type Index = number;
 
-export type GamePhase =
-  | { status: "ACTIVE"; turn: PlayerId }
-  | { status: "COMPLETE"; winner: PlayerId };
+export type GamePhase = "ACTIVE" | "COMPLETE";
 
 export interface State {
   players: Array<Player>;
   phase: GamePhase;
-  currentFrame: number;
-  currentRoll: number;
+  currentFrame: Index;
+  currentRoll: Index;
   rollInput: string;
+  currentTurn: Index;
+  winner: Index | null;
 }
 
 export type Roll =

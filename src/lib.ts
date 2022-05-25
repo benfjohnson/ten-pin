@@ -1,22 +1,27 @@
 import type * as TenPin from "./types";
 
-export const getTurn = (state: TenPin.State): TenPin.PlayerId => {
-  return (state.phase.status === "ACTIVE" && state.phase.turn) || 0;
+const NUM_PLAYERS = 5;
+const NUM_FRAMES = 10;
+
+const endOfFrame = (state: TenPin.State): boolean =>
+  state.currentTurn === NUM_PLAYERS - 1 && state.currentRoll === 1;
+
+// should handle end of frame, reaching final player
+export const advanceTurn = (state: TenPin.State): TenPin.Index => {
+  if (endOfFrame(state)) return 0;
+  return state.currentRoll === 0 ? state.currentTurn : state.currentTurn + 1;
 };
 
-// TODO: handle game end
-export const advanceTurn = (state: TenPin.State): TenPin.GamePhase => {
-  if (state.phase.status !== "ACTIVE") return state.phase;
-  const currentTurn = state.phase.turn;
-  return { status: "ACTIVE", turn: currentTurn + 1 };
-};
+export const advanceFrame = (state: TenPin.State): TenPin.Index =>
+  endOfFrame(state)
+    ? Math.min(NUM_FRAMES - 1, state.currentFrame + 1)
+    : state.currentFrame;
 
 export const submitRoll = (
   state: TenPin.State,
   rollValue: TenPin.Roll
 ): Array<TenPin.Player> => {
-  const { players, currentFrame, currentRoll } = state;
-  const currentTurn = getTurn(state);
+  const { players, currentFrame, currentTurn, currentRoll } = state;
 
   const player = state.players[currentTurn];
   const frame = player?.frames[currentFrame];
