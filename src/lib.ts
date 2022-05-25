@@ -17,6 +17,26 @@ export const advanceFrame = (state: TenPin.State): TenPin.Index =>
     ? Math.min(NUM_FRAMES - 1, state.currentFrame + 1)
     : state.currentFrame;
 
+// TODO: look-behind for / and x
+export const updateFrameScores = (
+  state: TenPin.State,
+  rollValue: TenPin.Roll
+): Array<TenPin.Frame> => {
+  const { currentFrame, currentTurn } = state;
+
+  // add the new roll value to each open frame score
+  const frames = state.players[currentTurn]?.frames || [];
+  for (let i = currentFrame; i < frames.length; i++) {
+    frames[i].score += parseInt(rollValue);
+  }
+
+  // retroactively update open frames with latest roll
+
+  return frames;
+};
+
+export const updateOpenFrames = () => {};
+
 export const submitRoll = (
   state: TenPin.State,
   rollValue: TenPin.Roll
@@ -29,13 +49,20 @@ export const submitRoll = (
 
   const newRolls = [...rolls, rollValue];
 
-  const newFrames: Array<TenPin.Frame> = player?.frames.map((f, i) =>
-    i === currentFrame ? { ...f, rolls: newRolls, open: currentRoll != 1 } : f
+  const newFrames: Array<TenPin.Frame> = updateFrameScores(
+    state,
+    rollValue
+  ).map((f, i) =>
+    i === currentFrame
+      ? {
+          ...f,
+          rolls: newRolls,
+          open: currentRoll != 1,
+        }
+      : f
   );
 
   return players.map((p, i) =>
-    i === currentTurn
-      ? { ...p, score: p.score + parseInt(rollValue), frames: newFrames }
-      : p
+    i === currentTurn ? { ...p, frames: newFrames } : p
   );
 };

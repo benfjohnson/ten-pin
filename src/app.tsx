@@ -42,6 +42,7 @@ const reducer = (state: TenPin.State, action: TenPin.Action): TenPin.State => {
 const getFrames = (): Array<TenPin.Frame> => {
   return [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((_) => ({
     open: true,
+    score: 0,
     rolls: [],
   }));
 };
@@ -64,12 +65,10 @@ const Frame = ({
   active,
   f,
   i,
-  score,
 }: {
   active: boolean;
   f: TenPin.Frame;
   i: number;
-  score: number;
 }) => {
   // potential third bonus roll allowed during the last frame
   const rolls = i === 9 ? [1, 2, 3] : [1, 2];
@@ -84,7 +83,7 @@ const Frame = ({
           </div>
         ))}
       </div>
-      <div className="frame-score">Score: {f.open ? "-" : score}</div>
+      <div className="frame-score">Score: {f.open ? "-" : f.score}</div>
     </div>
   );
 };
@@ -108,7 +107,6 @@ const App = () => {
               <Frame
                 key={frameIdx}
                 active={state.currentFrame === frameIdx}
-                score={p.score}
                 f={f}
                 i={frameIdx}
               />

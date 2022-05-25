@@ -30,11 +30,11 @@ export type Roll =
 export interface Frame {
   open: boolean;
   rolls: Array<Roll>;
+  score: number;
 }
 
 export interface Player {
   frames: Array<Frame>;
-  score: number;
 }
 
 export type Action =
