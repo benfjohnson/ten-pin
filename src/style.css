@@ -1,0 +1,30 @@
+.player.active {
+  border: 1px solid red;
+}
+
+.player-frames {
+  display: inline-flex;
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid black;
+  padding: 10px;
+}
+
+/* 
+.frame.active h3 {
+  color: red;
+} */
+
+.frame-rolls {
+  display: flex;
+  flex-direction: row;
+  margin-left: 10px;
+}
+
+.roll {
+  border: 1px solid black;
+  padding: 10px;
+}
